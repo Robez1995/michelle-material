@@ -134,12 +134,12 @@ var STEPS = [
      {l:"Nach Klassenstufe (JUeL)",ic:"\uD83C\uDFAF",v:"Ja, nach Klassenstufe (JUeL)"},
      {l:"Nach Leistungsniveau",ic:"\uD83D\uDCF6",v:"Ja, nach Leistungsniveau"}
    ]},
-  {id:"bezug", q:"Bezug zu vorhandenem Material?", h:"Baut das neue Material auf etwas auf, das schon existiert?", t:"choice",
+  {id:"anhang", q:"Moechtest du Dateien anhaengen?", h:"z.B. ein altes Arbeitsblatt als Vorlage, ein PDF, etc.", t:"files"},
+  {id:"bezug", q:"Bezug zu vorhandenem Material?", h:"Baut das neue Material auf etwas auf, das schon existiert?", t:"bezug",
    opts:[
      {l:"Nein, eigenstaendig",ic:"\uD83C\uDD95",v:"Eigenstaendiges Thema, kein Bezug"},
-     {l:"Ja, baut auf was auf",ic:"\uD83D\uDD17",v:"_custom"}
-   ]},
-  {id:"anhang", q:"Moechtest du Dateien anhaengen?", h:"z.B. ein altes Arbeitsblatt als Vorlage, ein PDF, etc.", t:"files"}
+     {l:"Ja, andere Datei (Name eingeben)",ic:"\uD83D\uDD17",v:"_custom"}
+   ]}
 ];
 
 var cur = 0, ans = {}, expanded = false, pickedFiles = [];
@@ -209,6 +209,28 @@ function draw(){
     }
     html+='<button type="button" class="skipbtn" id="skipFiles">'+(pickedFiles.length>0?"Weiter \u2192":"Ohne Dateien weiter \u2192")+'</button>';
     html+='</div>';
+  } else if(s.t==="bezug"){
+    html+='<div class="opts">';
+    // Show picked files as selectable options
+    if(pickedFiles.length>0){
+      for(var bi=0;bi<pickedFiles.length;bi++){
+        var bsel=ans[s.id]===pickedFiles[bi].name?"sel":"";
+        html+='<button type="button" class="opt '+bsel+'" data-bezfile="'+bi+'"><span class="ic">\uD83D\uDCC4</span> '+esc(pickedFiles[bi].name)+'</button>';
+      }
+    }
+    // Standard options
+    for(var bj=0;bj<s.opts.length;bj++){
+      var bo2=s.opts[bj], bsel2=ans[s.id]===bo2.v?"sel":"";
+      if(bo2.v==="_custom"){
+        html+='<button type="button" class="opt '+(ans[s.id]==="_custom"?"sel":"")+'" data-custom="'+s.id+'"><span class="ic">'+bo2.ic+'</span> '+esc(bo2.l)+'</button>';
+        if(ans[s.id]==="_custom"){
+          html+='<input type="text" class="inp" id="ci" placeholder="Dateiname eingeben..." value="'+esc(ans[s.id+"_c"]||"")+'">';
+        }
+      } else {
+        html+='<button type="button" class="opt '+bsel2+'" data-bezval="'+bj+'"><span class="ic">'+bo2.ic+'</span> '+esc(bo2.l)+'</button>';
+      }
+    }
+    html+='</div>';
   }
   html+='</div>';
   box.innerHTML=html;
@@ -230,6 +252,29 @@ function draw(){
   }
   var skipBtn=document.getElementById("skipFiles");
   if(skipBtn) skipBtn.addEventListener("click",function(){expanded=false;cur++;draw();window.scrollTo(0,0)});
+
+  // bezug file buttons
+  var bezFiles=box.querySelectorAll("[data-bezfile]");
+  for(var bf=0;bf<bezFiles.length;bf++){
+    bezFiles[bf].addEventListener("click",function(){
+      var idx=parseInt(this.getAttribute("data-bezfile"));
+      ans["bezug"]=pickedFiles[idx].name;
+      delete ans["bezug_c"];
+      draw();
+      setTimeout(function(){if(!nx.disabled){expanded=false;cur++;draw();window.scrollTo(0,0)}},180);
+    });
+  }
+  var bezVals=box.querySelectorAll("[data-bezval]");
+  for(var bv=0;bv<bezVals.length;bv++){
+    bezVals[bv].addEventListener("click",function(){
+      var idx=parseInt(this.getAttribute("data-bezval"));
+      var s2=STEPS[cur];
+      ans[s2.id]=s2.opts[idx].v;
+      delete ans[s2.id+"_c"];
+      draw();
+      setTimeout(function(){if(!nx.disabled){expanded=false;cur++;draw();window.scrollTo(0,0)}},180);
+    });
+  }
 
   // event delegation
   var opts=box.querySelectorAll("[data-pick]");
@@ -269,7 +314,7 @@ function upd(){
   var s=STEPS[cur],ok=false;
   if(s.opt){ok=true}
   else if(s.t==="files"){ok=true}
-  else if(s.t==="choice"){ok=!!ans[s.id];if(ans[s.id]==="_custom")ok=!!(ans[s.id+"_c"]||"").trim()}
+  else if(s.t==="choice"||s.t==="bezug"){ok=!!ans[s.id];if(ans[s.id]==="_custom")ok=!!(ans[s.id+"_c"]||"").trim()}
   else{ok=!!(ans[s.id]||"").trim()}
   nx.disabled=!ok;
 }

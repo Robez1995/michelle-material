@@ -57,7 +57,6 @@ textarea.inp{resize:vertical;min-height:110px}
 .skipbtn{display:block;text-align:center;margin-top:14px;color:var(--tl);font-size:14px;cursor:pointer;background:none;border:none;width:100%;padding:10px}
 .shr{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .sb{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;color:#fff;text-decoration:none;-webkit-tap-highlight-color:transparent}
-.sb.wa{background:#25D366}
 .sb.em{background:#3498DB}
 .sb.cp{background:#7F8C8D}
 .sb.nw{background:var(--bg);color:var(--t);border:2px solid var(--b);margin-top:8px}
@@ -355,30 +354,21 @@ function drawResult(){
   // Anhang-Hinweis
   var hatAnhang=pickedFiles.length>0;
   if(hatAnhang){
-    html+='<div class="card" style="border-color:#F39C12;background:#FEF9E7">';
-    html+='<h3 style="color:#F39C12">\uD83D\uDCCE Dateien in Google Drive hochladen</h3>';
-    html+='<p style="font-size:14px;margin-bottom:8px">Folgende Dateien gehoeren zu diesem Auftrag:</p>';
-    html+='<div style="margin-bottom:12px">';
+    html+='<div class="card" style="border-color:#3498DB;background:#EBF5FB">';
+    html+='<h3 style="color:#3498DB">\uD83D\uDCCE Dateien per E-Mail mitschicken</h3>';
+    html+='<p style="font-size:14px;margin-bottom:4px">Haenge diese Dateien an die E-Mail an:</p>';
     for(var fi=0;fi<pickedFiles.length;fi++){
-      html+='<div style="padding:6px 0;font-size:14px;border-bottom:1px solid #F5E6C8">\uD83D\uDCC4 <strong>'+esc(pickedFiles[fi].name)+'</strong></div>';
+      html+='<div style="padding:6px 0;font-size:14px;border-bottom:1px solid #D4E6F1">\uD83D\uDCC4 <strong>'+esc(pickedFiles[fi].name)+'</strong></div>';
     }
-    html+='</div>';
-    html+='<p style="font-size:14px;margin-bottom:12px">Lade sie jetzt in den Google Drive Ordner hoch:</p>';
-    html+='<a href="https://drive.google.com/drive/folders/14N5GiMYnJW9-Doo0Q_cwXXA7amg4qAzq" class="sb" style="background:#F39C12" target="_blank">\uD83D\uDCC2 Ordner: Neue Auftraege oeffnen</a>';
     html+='</div>';
   }
 
   html+='<div class="shr">';
   html+='<p style="font-size:14px;font-weight:600;margin-bottom:4px">Prompt an Robin senden:</p>';
-  var wt=encodeURIComponent(prompt);
-  html+='<a href="https://wa.me/?text='+wt+'" class="sb wa" target="_blank">\uD83D\uDCF1 Per WhatsApp senden</a>';
   var su=encodeURIComponent("Material-Auftrag: "+ga("fach")+" \u2014 "+ga("thema"));
   var bo=encodeURIComponent(prompt);
   html+='<a href="mailto:r.rupprath35@gmail.com?subject='+su+'&body='+bo+'" class="sb em">\u2709\uFE0F Per E-Mail senden</a>';
   html+='<button type="button" class="sb cp" id="cpBt">\uD83D\uDCCB Prompt kopieren</button>';
-  if(!hatAnhang){
-    html+='<a href="https://drive.google.com/drive/folders/14N5GiMYnJW9-Doo0Q_cwXXA7amg4qAzq" class="sb" style="background:#F4D03F;color:#2C3E50" target="_blank">\uD83D\uDCC2 Google Drive: Neue Auftraege</a>';
-  }
   html+='<button type="button" class="sb nw" id="nwBt">\uD83D\uDD04 Neuen Auftrag erstellen</button>';
   html+='</div></div>';
   box.innerHTML=html;

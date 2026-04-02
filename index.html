@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Material">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2327AE60' width='100' height='100' rx='20'/><text x='50' y='68' text-anchor='middle' font-size='50'>📝</text></svg>">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Material%20bestellen%22%2C%22short_name%22%3A%22Material%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F8F9FA%22%2C%22theme_color%22%3A%22%2327AE60%22%7D">
+<meta name="theme-color" content="#27AE60">
+<title>Material bestellen</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--g:#27AE60;--gl:#D5F5E3;--gd:#1E8449;--bg:#F8F9FA;--w:#FFF;--t:#2C3E50;--tl:#7F8C8D;--b:#E0E0E0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;min-height:100dvh}
+.hdr{background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;padding:56px 20px 20px;text-align:center;position:sticky;top:0;z-index:10}
+.hdr h1{font-size:20px;font-weight:700}
+.hdr p{font-size:13px;opacity:.85;margin-top:4px}
+.pbar{display:flex;gap:4px;padding:0 20px;margin-top:12px}
+.pbar div{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.3);transition:.3s}
+.pbar .on{background:#fff}
+.pbar .ok{background:rgba(255,255,255,.7)}
+#box{padding:20px 16px 120px;max-width:500px;margin:0 auto}
+.q{font-size:18px;font-weight:600;margin-bottom:6px}
+.h{font-size:13px;color:var(--tl);margin-bottom:16px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--w);border:2px solid var(--b);border-radius:12px;font-size:15px;font-weight:500;color:var(--t);cursor:pointer;transition:.15s;text-align:left;-webkit-tap-highlight-color:transparent;-webkit-appearance:none;appearance:none;width:100%}
+.opt:active,.opt.sel{border-color:var(--g);background:var(--gl)}
+.opt .ic{font-size:22px;flex-shrink:0}
+.opt.more{border-style:dashed;color:var(--tl)}
+.inp{width:100%;padding:14px 16px;border:2px solid var(--b);border-radius:12px;font-size:16px;font-family:inherit;color:var(--t);background:var(--w);-webkit-appearance:none;appearance:none}
+.inp:focus{outline:none;border-color:var(--g)}
+textarea.inp{resize:vertical;min-height:110px}
+.tag{display:inline-block;background:var(--bg);color:var(--tl);font-size:11px;padding:2px 8px;border-radius:6px;margin-left:8px}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,8px));background:#fff;border-top:1px solid var(--b);z-index:10}
+.nav .bt{flex:1;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-appearance:none}
+#bk{background:var(--bg);color:var(--tl);flex:.4}
+#nx{background:var(--g);color:#fff}
+#nx:disabled{background:var(--b);color:var(--tl)}
+#nx:active:not(:disabled){background:var(--gd)}
+.card{background:var(--w);border:2px solid var(--g);border-radius:16px;padding:20px;margin-bottom:16px}
+.card h3{color:var(--g);font-size:14px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bg);font-size:14px}
+.row:last-child{border:none}
+.row .l{color:var(--tl)}
+.row .v{font-weight:600;text-align:right;max-width:60%}
+.shr{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.sb{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;color:#fff;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.sb.wa{background:#25D366}
+.sb.em{background:#3498DB}
+.sb.cp{background:#7F8C8D}
+.sb.nw{background:var(--bg);color:var(--t);border:2px solid var(--b);margin-top:8px}
+.chk{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:16px;margin-right:6px}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#box>div{animation:fi .25s ease}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>Unterrichtsmaterial bestellen</h1>
+  <p>Schritt fuer Schritt zum fertigen Prompt</p>
+  <div class="pbar" id="pb"></div>
+</div>
+
+<div id="box"></div>
+
+<div class="nav" id="nav">
+  <button class="bt" id="bk">Zurueck</button>
+  <button class="bt" id="nx">Weiter</button>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var STEPS = [
+  {id:"klasse", q:"Fuer welche Klasse?", h:"Waehle die Klassenstufe aus.", t:"choice",
+   opts:[
+     {l:"JUeL 1-3",ic:"\uD83D\uDC23",v:"JUeL 1-3"},
+     {l:"JUeL 4-6",ic:"\uD83E\uDD8A",v:"JUeL 4-6"},
+     {l:"Klasse 4",ic:"\uD83D\uDCD7",v:"Klasse 4"},
+     {l:"Klasse 5",ic:"\uD83D\uDCD8",v:"Klasse 5"},
+     {l:"Klasse 6",ic:"\uD83D\uDCD9",v:"Klasse 6"}
+   ]},
+  {id:"fach", q:"Welches Fach?", h:"Waehle das Unterrichtsfach.", t:"choice",
+   opts:[
+     {l:"Deutsch",ic:"\uD83D\uDCDD",v:"Deutsch"},
+     {l:"Mathe",ic:"\uD83D\uDD22",v:"Mathe"},
+     {l:"Englisch",ic:"\uD83C\uDDEC\uD83C\uDDE7",v:"Englisch"},
+     {l:"Anderes Fach",ic:"\uD83D\uDCDA",v:"_custom"}
+   ]},
+  {id:"thema", q:"Was ist das Thema?", h:"z.B. Textsorten, Geometrie, Present Tense, Emil und die Detektive...", t:"text",
+   ph:"Thema eingeben..."},
+  {id:"typ", q:"Was soll erstellt werden?", h:"Waehle den Materialtyp.", t:"choice",
+   opts:[
+     {l:"Arbeitsblatt",ic:"\uD83D\uDCC4",v:"Arbeitsblatt"},
+     {l:"Klassenarbeit + EWH",ic:"\u270D\uFE0F",v:"Klassenarbeit + Erwartungshorizont"},
+     {l:"Lernspiel (SmartBoard)",ic:"\uD83C\uDFAE",v:"Lernspiel (PowerPoint/SmartBoard)"},
+     {l:"Praesentation",ic:"\uD83D\uDCCA",v:"Praesentation fuer SmartBoard"}
+   ],
+   more:[
+     {l:"Tippkarten",ic:"\uD83D\uDCA1",v:"Tippkarten"},
+     {l:"Stationenlernen",ic:"\uD83D\uDD04",v:"Stationenlernen"},
+     {l:"Elternbrief",ic:"\u2709\uFE0F",v:"Elternbrief"},
+     {l:"Wochenplan",ic:"\uD83D\uDCC5",v:"Wochenplan"},
+     {l:"Unterrichtsentwurf",ic:"\uD83D\uDCCB",v:"Unterrichtsentwurf"},
+     {l:"Loesungsblatt",ic:"\u2705",v:"Loesungsblatt"},
+     {l:"Sonstiges",ic:"\u2795",v:"_custom"}
+   ]},
+  {id:"beschreibung", q:"Beschreibe genauer, was drauf soll:", h:"Je genauer, desto besser! z.B. Anzahl Aufgaben, Schwierigkeit, besondere Wuensche...", t:"textarea",
+   ph:"z.B.: 10 Aufgaben zum schriftlichen Dividieren in 3 Schwierigkeitsstufen. Oben ein Merkkasten mit den Rechenschritten..."},
+  {id:"zeit", q:"Bearbeitungszeit?", h:"Nur bei Klassenarbeiten / Tests noetig.", t:"choice", opt:true,
+   opts:[
+     {l:"Nicht noetig",ic:"\u23ED\uFE0F",v:""},
+     {l:"45 Minuten",ic:"\u23F1\uFE0F",v:"45 Minuten"},
+     {l:"60 Minuten",ic:"\u23F1\uFE0F",v:"60 Minuten"},
+     {l:"80 Minuten",ic:"\u23F1\uFE0F",v:"80 Minuten"}
+   ]},
+  {id:"diff", q:"Differenzierung?", h:"Sollen verschiedene Schwierigkeitsgrade erstellt werden?", t:"choice",
+   opts:[
+     {l:"Nein",ic:"1\uFE0F\u20E3",v:"Nein"},
+     {l:"Nach Klassenstufe (JUeL)",ic:"\uD83C\uDFAF",v:"Ja, nach Klassenstufe (JUeL)"},
+     {l:"Nach Leistungsniveau",ic:"\uD83D\uDCF6",v:"Ja, nach Leistungsniveau"}
+   ]},
+  {id:"bezug", q:"Bezug zu vorhandenem Material?", h:"Baut das neue Material auf etwas auf, das schon existiert?", t:"choice",
+   opts:[
+     {l:"Nein, eigenstaendig",ic:"\uD83C\uDD95",v:"Eigenstaendiges Thema, kein Bezug"},
+     {l:"Ja, baut auf was auf",ic:"\uD83D\uDD17",v:"_custom"}
+   ]},
+  {id:"anhang", q:"Moechtest du Dateien anhaengen?", h:"z.B. ein altes Arbeitsblatt als Vorlage, ein PDF, etc.", t:"choice",
+   opts:[
+     {l:"Nein",ic:"\u23ED\uFE0F",v:""},
+     {l:"Ja (Dateiname(n) angeben)",ic:"\uD83D\uDCCE",v:"_custom"}
+   ]}
+];
+
+var cur = 0, ans = {}, expanded = false;
+var box = document.getElementById("box");
+var pb = document.getElementById("pb");
+var nav = document.getElementById("nav");
+var bk = document.getElementById("bk");
+var nx = document.getElementById("nx");
+
+bk.addEventListener("click", function(){ if(cur>0){expanded=false;cur--;draw();window.scrollTo(0,0)} });
+nx.addEventListener("click", function(){ if(!nx.disabled){expanded=false;cur++;draw();window.scrollTo(0,0)} });
+
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function draw(){
+  // progress
+  var dots="";
+  for(var i=0;i<STEPS.length;i++) dots+='<div class="'+(i<cur?"ok":i===cur?"on":"")+'"></div>';
+  pb.innerHTML=dots;
+  bk.style.display=cur===0?"none":"block";
+
+  if(cur>=STEPS.length){drawResult();return}
+
+  var s=STEPS[cur];
+  var last=cur===STEPS.length-1;
+  nx.textContent=last?"Fertig!":"Weiter";
+  nav.style.display="flex";
+
+  var html='<div><p class="q">'+esc(s.q);
+  if(s.opt) html+='<span class="tag">Optional</span>';
+  html+='</p><p class="h">'+esc(s.h)+'</p>';
+
+  if(s.t==="choice"){
+    html+='<div class="opts">';
+    var all=s.opts.slice();
+    if(expanded && s.more) all=all.concat(s.more);
+    for(var j=0;j<all.length;j++){
+      var o=all[j], sel=ans[s.id]===o.v?"sel":"";
+      if(o.v==="_custom"){
+        html+='<button type="button" class="opt '+(ans[s.id]==="_custom"?"sel":"")+'" data-custom="'+s.id+'"><span class="ic">'+o.ic+'</span> '+esc(o.l)+'</button>';
+        if(ans[s.id]==="_custom"){
+          html+='<input type="text" class="inp" id="ci" placeholder="Hier eingeben..." value="'+esc(ans[s.id+"_c"]||"")+'">';
+        }
+      } else {
+        html+='<button type="button" class="opt '+sel+'" data-pick="'+j+'"><span class="ic">'+o.ic+'</span> '+esc(o.l)+'</button>';
+      }
+    }
+    if(s.more && !expanded){
+      html+='<button type="button" class="opt more" id="moreBt"><span class="ic">\u2B07\uFE0F</span> Mehr Optionen anzeigen...</button>';
+    }
+    html+='</div>';
+  } else if(s.t==="text"){
+    html+='<input type="text" class="inp" id="ti" placeholder="'+esc(s.ph||"")+'" value="'+esc(ans[s.id]||"")+'">';
+  } else if(s.t==="textarea"){
+    html+='<textarea class="inp" id="ti" placeholder="'+esc(s.ph||"")+'">'+esc(ans[s.id]||"")+'</textarea>';
+  }
+  html+='</div>';
+  box.innerHTML=html;
+
+  // event delegation
+  var opts=box.querySelectorAll("[data-pick]");
+  for(var k=0;k<opts.length;k++){
+    opts[k].addEventListener("click",function(){
+      var idx=parseInt(this.getAttribute("data-pick"));
+      var s2=STEPS[cur];
+      var all2=s2.opts.slice();
+      if(expanded && s2.more) all2=all2.concat(s2.more);
+      ans[s2.id]=all2[idx].v;
+      delete ans[s2.id+"_c"];
+      draw();
+      setTimeout(function(){if(!nx.disabled){expanded=false;cur++;draw();window.scrollTo(0,0)}},180);
+    });
+  }
+  var customs=box.querySelectorAll("[data-custom]");
+  for(var k2=0;k2<customs.length;k2++){
+    customs[k2].addEventListener("click",function(){
+      ans[this.getAttribute("data-custom")]="_custom";
+      draw();
+      var ci=document.getElementById("ci");
+      if(ci) setTimeout(function(){ci.focus()},50);
+    });
+  }
+  var ci=document.getElementById("ci");
+  if(ci) ci.addEventListener("input",function(){ans[STEPS[cur].id+"_c"]=this.value;upd()});
+  var ti=document.getElementById("ti");
+  if(ti){ti.addEventListener("input",function(){ans[STEPS[cur].id]=this.value;upd()});setTimeout(function(){ti.focus()},80)}
+  var mb=document.getElementById("moreBt");
+  if(mb) mb.addEventListener("click",function(){expanded=true;draw()});
+
+  upd();
+}
+
+function upd(){
+  if(cur>=STEPS.length)return;
+  var s=STEPS[cur],ok=false;
+  if(s.opt){ok=true}
+  else if(s.t==="choice"){ok=!!ans[s.id];if(ans[s.id]==="_custom")ok=!!(ans[s.id+"_c"]||"").trim()}
+  else{ok=!!(ans[s.id]||"").trim()}
+  nx.disabled=!ok;
+}
+
+function ga(id){var v=ans[id];return v==="_custom"?(ans[id+"_c"]||""):v||""}
+
+function mkPrompt(){
+  var p="# Neuer Auftrag\n";
+  p+="**Klasse:** "+ga("klasse")+"\n";
+  p+="**Fach:** "+ga("fach")+"\n";
+  p+="**Thema:** "+ga("thema")+"\n\n";
+  p+="**Was soll erstellt werden?**\n- "+ga("typ")+"\n\n";
+  p+="**Beschreibung \u2014 Was genau soll drauf?**\n"+ga("beschreibung")+"\n\n";
+  p+="---\n";
+  p+="*Nur ausfuellen wenn noetig:*\n";
+  p+="**Bearbeitungszeit:** "+(ga("zeit")||"entfaellt")+"\n";
+  p+="**Differenzierung:** "+ga("diff")+"\n";
+  var bz=ga("bezug");
+  p+="**Baut auf vorhandenem Material auf:** "+(bz.indexOf("Eigen")===0?"Nein":"Ja \u2192 "+bz)+"\n";
+  var an=ga("anhang");
+  p+="**Anhaenge:** "+(an?"Ja \u2192 "+an:"Nein")+"\n";
+  return p;
+}
+
+function drawResult(){
+  nav.style.display="none";
+  var prompt=mkPrompt();
+  var html='<div>';
+  html+='<p class="q"><span class="chk">\u2713</span> Fertig!</p>';
+  html+='<p class="h">Dein Prompt wurde erstellt. Sende ihn jetzt an Robin.</p>';
+  html+='<div class="card"><h3>Zusammenfassung</h3>';
+  var f=[["Klasse",ga("klasse")],["Fach",ga("fach")],["Thema",ga("thema")],["Materialtyp",ga("typ")]];
+  var z=ga("zeit");if(z)f.push(["Bearbeitungszeit",z]);
+  f.push(["Differenzierung",ga("diff")]);
+  for(var i=0;i<f.length;i++) html+='<div class="row"><span class="l">'+esc(f[i][0])+'</span><span class="v">'+esc(f[i][1])+'</span></div>';
+  html+='</div>';
+
+  html+='<div class="shr">';
+  var wt=encodeURIComponent(prompt);
+  html+='<a href="https://wa.me/?text='+wt+'" class="sb wa" target="_blank">\uD83D\uDCF1 Per WhatsApp senden</a>';
+  var su=encodeURIComponent("Material-Auftrag: "+ga("fach")+" \u2014 "+ga("thema"));
+  var bo=encodeURIComponent(prompt);
+  html+='<a href="mailto:r.rupprath35@gmail.com?subject='+su+'&body='+bo+'" class="sb em">\u2709\uFE0F Per E-Mail senden</a>';
+  html+='<button type="button" class="sb cp" id="cpBt">\uD83D\uDCCB Prompt kopieren</button>';
+  html+='<button type="button" class="sb nw" id="nwBt">\uD83D\uDD04 Neuen Auftrag erstellen</button>';
+  html+='</div></div>';
+  box.innerHTML=html;
+
+  document.getElementById("cpBt").addEventListener("click",function(){
+    var btn=this;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(prompt).then(function(){btn.textContent="\u2705 Kopiert!";setTimeout(function(){btn.textContent="\uD83D\uDCCB Prompt kopieren"},2000)});
+    } else {
+      var ta=document.createElement("textarea");ta.value=prompt;ta.style.position="fixed";ta.style.left="-9999px";
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand("copy");btn.textContent="\u2705 Kopiert!"}catch(e){btn.textContent="\u274C Fehler"}
+      document.body.removeChild(ta);
+      setTimeout(function(){btn.textContent="\uD83D\uDCCB Prompt kopieren"},2000);
+    }
+  });
+  document.getElementById("nwBt").addEventListener("click",function(){cur=0;ans={};expanded=false;draw();window.scrollTo(0,0)});
+}
+
+// Init when DOM is ready
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",draw)}else{draw()}
+})();
+</script>
+</body>
+</html>

@@ -268,13 +268,28 @@ function drawResult(){
   for(var i=0;i<f.length;i++) html+='<div class="row"><span class="l">'+esc(f[i][0])+'</span><span class="v">'+esc(f[i][1])+'</span></div>';
   html+='</div>';
 
+  // Anhang-Hinweis
+  var hatAnhang=!!ga("anhang");
+  if(hatAnhang){
+    html+='<div class="card" style="border-color:#F39C12;background:#FEF9E7">';
+    html+='<h3 style="color:#F39C12">\uD83D\uDCCE Anhaenge nicht vergessen!</h3>';
+    html+='<p style="font-size:14px;margin-bottom:12px">Du hast Anhaenge angegeben: <strong>'+esc(ga("anhang"))+'</strong></p>';
+    html+='<p style="font-size:14px;margin-bottom:12px">Lade sie jetzt in den Google Drive Ordner hoch:</p>';
+    html+='<a href="https://drive.google.com/drive/folders/14N5GiMYnJW9-Doo0Q_cwXXA7amg4qAzq" class="sb" style="background:#F39C12" target="_blank">\uD83D\uDCC2 Ordner: Neue Auftraege oeffnen</a>';
+    html+='</div>';
+  }
+
   html+='<div class="shr">';
+  html+='<p style="font-size:14px;font-weight:600;margin-bottom:4px">Prompt an Robin senden:</p>';
   var wt=encodeURIComponent(prompt);
   html+='<a href="https://wa.me/?text='+wt+'" class="sb wa" target="_blank">\uD83D\uDCF1 Per WhatsApp senden</a>';
   var su=encodeURIComponent("Material-Auftrag: "+ga("fach")+" \u2014 "+ga("thema"));
   var bo=encodeURIComponent(prompt);
   html+='<a href="mailto:r.rupprath35@gmail.com?subject='+su+'&body='+bo+'" class="sb em">\u2709\uFE0F Per E-Mail senden</a>';
   html+='<button type="button" class="sb cp" id="cpBt">\uD83D\uDCCB Prompt kopieren</button>';
+  if(!hatAnhang){
+    html+='<a href="https://drive.google.com/drive/folders/14N5GiMYnJW9-Doo0Q_cwXXA7amg4qAzq" class="sb" style="background:#F4D03F;color:#2C3E50" target="_blank">\uD83D\uDCC2 Google Drive: Neue Auftraege</a>';
+  }
   html+='<button type="button" class="sb nw" id="nwBt">\uD83D\uDD04 Neuen Auftrag erstellen</button>';
   html+='</div></div>';
   box.innerHTML=html;

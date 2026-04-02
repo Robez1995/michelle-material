@@ -45,6 +45,16 @@ textarea.inp{resize:vertical;min-height:110px}
 .row:last-child{border:none}
 .row .l{color:var(--tl)}
 .row .v{font-weight:600;text-align:right;max-width:60%}
+.filebx{margin-top:10px}
+.filelbl{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;background:var(--w);border:2px dashed var(--b);border-radius:12px;font-size:15px;font-weight:500;color:var(--tl);cursor:pointer;transition:.15s}
+.filelbl:active{border-color:var(--g);background:var(--gl)}
+.filelbl input{display:none}
+.flist{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.fitem{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--gl);border:1px solid var(--g);border-radius:10px;font-size:14px}
+.fitem .fn{flex:1;font-weight:500;word-break:break-all}
+.fitem .fs{color:var(--tl);font-size:12px;white-space:nowrap}
+.fitem .fx{background:none;border:none;color:var(--tl);font-size:18px;cursor:pointer;padding:0 4px}
+.skipbtn{display:block;text-align:center;margin-top:14px;color:var(--tl);font-size:14px;cursor:pointer;background:none;border:none;width:100%;padding:10px}
 .shr{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .sb{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;color:#fff;text-decoration:none;-webkit-tap-highlight-color:transparent}
 .sb.wa{background:#25D366}
@@ -129,14 +139,10 @@ var STEPS = [
      {l:"Nein, eigenstaendig",ic:"\uD83C\uDD95",v:"Eigenstaendiges Thema, kein Bezug"},
      {l:"Ja, baut auf was auf",ic:"\uD83D\uDD17",v:"_custom"}
    ]},
-  {id:"anhang", q:"Moechtest du Dateien anhaengen?", h:"z.B. ein altes Arbeitsblatt als Vorlage, ein PDF, etc.", t:"choice",
-   opts:[
-     {l:"Nein",ic:"\u23ED\uFE0F",v:""},
-     {l:"Ja (Dateiname(n) angeben)",ic:"\uD83D\uDCCE",v:"_custom"}
-   ]}
+  {id:"anhang", q:"Moechtest du Dateien anhaengen?", h:"z.B. ein altes Arbeitsblatt als Vorlage, ein PDF, etc.", t:"files"}
 ];
 
-var cur = 0, ans = {}, expanded = false;
+var cur = 0, ans = {}, expanded = false, pickedFiles = [];
 var box = document.getElementById("box");
 var pb = document.getElementById("pb");
 var nav = document.getElementById("nav");
@@ -189,9 +195,41 @@ function draw(){
     html+='<input type="text" class="inp" id="ti" placeholder="'+esc(s.ph||"")+'" value="'+esc(ans[s.id]||"")+'">';
   } else if(s.t==="textarea"){
     html+='<textarea class="inp" id="ti" placeholder="'+esc(s.ph||"")+'">'+esc(ans[s.id]||"")+'</textarea>';
+  } else if(s.t==="files"){
+    html+='<div class="filebx">';
+    html+='<label class="filelbl"><span>\uD83D\uDCCE</span> Dateien auswaehlen<input type="file" id="filePick" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.txt"></label>';
+    if(pickedFiles.length>0){
+      html+='<div class="flist">';
+      for(var fi=0;fi<pickedFiles.length;fi++){
+        var sz=pickedFiles[fi].size;
+        var szTxt=sz<1024?(sz+" B"):sz<1048576?(Math.round(sz/1024)+" KB"):(Math.round(sz/1048576*10)/10+" MB");
+        html+='<div class="fitem"><span class="fn">'+esc(pickedFiles[fi].name)+'</span><span class="fs">'+szTxt+'</span><button type="button" class="fx" data-rmfile="'+fi+'">\u2715</button></div>';
+      }
+      html+='</div>';
+    }
+    html+='<button type="button" class="skipbtn" id="skipFiles">'+(pickedFiles.length>0?"Weiter \u2192":"Ohne Dateien weiter \u2192")+'</button>';
+    html+='</div>';
   }
   html+='</div>';
   box.innerHTML=html;
+
+  // file picker events
+  var fp=document.getElementById("filePick");
+  if(fp) fp.addEventListener("change",function(){
+    for(var i=0;i<this.files.length;i++) pickedFiles.push(this.files[i]);
+    ans["anhang"]=pickedFiles.map(function(f){return f.name}).join(", ");
+    draw();
+  });
+  var rmBtns=box.querySelectorAll("[data-rmfile]");
+  for(var r=0;r<rmBtns.length;r++){
+    rmBtns[r].addEventListener("click",function(){
+      pickedFiles.splice(parseInt(this.getAttribute("data-rmfile")),1);
+      ans["anhang"]=pickedFiles.length?pickedFiles.map(function(f){return f.name}).join(", "):"";
+      draw();
+    });
+  }
+  var skipBtn=document.getElementById("skipFiles");
+  if(skipBtn) skipBtn.addEventListener("click",function(){expanded=false;cur++;draw();window.scrollTo(0,0)});
 
   // event delegation
   var opts=box.querySelectorAll("[data-pick]");
@@ -230,6 +268,7 @@ function upd(){
   if(cur>=STEPS.length)return;
   var s=STEPS[cur],ok=false;
   if(s.opt){ok=true}
+  else if(s.t==="files"){ok=true}
   else if(s.t==="choice"){ok=!!ans[s.id];if(ans[s.id]==="_custom")ok=!!(ans[s.id+"_c"]||"").trim()}
   else{ok=!!(ans[s.id]||"").trim()}
   nx.disabled=!ok;
@@ -269,11 +308,16 @@ function drawResult(){
   html+='</div>';
 
   // Anhang-Hinweis
-  var hatAnhang=!!ga("anhang");
+  var hatAnhang=pickedFiles.length>0;
   if(hatAnhang){
     html+='<div class="card" style="border-color:#F39C12;background:#FEF9E7">';
-    html+='<h3 style="color:#F39C12">\uD83D\uDCCE Anhaenge nicht vergessen!</h3>';
-    html+='<p style="font-size:14px;margin-bottom:12px">Du hast Anhaenge angegeben: <strong>'+esc(ga("anhang"))+'</strong></p>';
+    html+='<h3 style="color:#F39C12">\uD83D\uDCCE Dateien in Google Drive hochladen</h3>';
+    html+='<p style="font-size:14px;margin-bottom:8px">Folgende Dateien gehoeren zu diesem Auftrag:</p>';
+    html+='<div style="margin-bottom:12px">';
+    for(var fi=0;fi<pickedFiles.length;fi++){
+      html+='<div style="padding:6px 0;font-size:14px;border-bottom:1px solid #F5E6C8">\uD83D\uDCC4 <strong>'+esc(pickedFiles[fi].name)+'</strong></div>';
+    }
+    html+='</div>';
     html+='<p style="font-size:14px;margin-bottom:12px">Lade sie jetzt in den Google Drive Ordner hoch:</p>';
     html+='<a href="https://drive.google.com/drive/folders/14N5GiMYnJW9-Doo0Q_cwXXA7amg4qAzq" class="sb" style="background:#F39C12" target="_blank">\uD83D\uDCC2 Ordner: Neue Auftraege oeffnen</a>';
     html+='</div>';
@@ -306,7 +350,7 @@ function drawResult(){
       setTimeout(function(){btn.textContent="\uD83D\uDCCB Prompt kopieren"},2000);
     }
   });
-  document.getElementById("nwBt").addEventListener("click",function(){cur=0;ans={};expanded=false;draw();window.scrollTo(0,0)});
+  document.getElementById("nwBt").addEventListener("click",function(){cur=0;ans={};expanded=false;pickedFiles=[];draw();window.scrollTo(0,0)});
 }
 
 // Init when DOM is ready
